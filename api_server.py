@@ -12,8 +12,22 @@ from src.utils.user_interactions import UserInteractionTracker
 from src.models.hybrid_recommender import HybridRecommender
 
 app = Flask(__name__)
-# CORS(app, resources={r"/*": {"origins": "*"}}) # Enable CORS for all routes
-CORS(app, resources={r"/*": {"origins": ["https://movie-recommender-engine.netlify.app", "http://localhost:5173"]}})
+# CORS(app, resources={r"/*": {"origins": ["https://movie-recommender-engine.netlify.app", "http://localhost:5173"]}})
+# Enable CORS for all routes in development, or specific origins in production
+if os.environ.get("FLASK_ENV") == "development":
+    CORS(app, resources={r"/*": {"origins": "*"}})
+else:
+    # In production, specify allowed origins
+    allowed_origins = [
+        "https://movie-recommender-engine.netlify.app",  # Main production frontend
+        "http://localhost:5173"  # Local development frontend
+    ]
+    # Add custom origins from environment variable if provided
+    custom_origin = os.environ.get("ALLOWED_ORIGIN")
+    if custom_origin:
+        allowed_origins.append(custom_origin)
+    
+    CORS(app, resources={r"/*": {"origins": allowed_origins}})
 
 # TMDB API Configuration
 # NOTE: This is a sample key for demo purposes only. For production use, you must obtain your own API key

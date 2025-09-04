@@ -48,6 +48,34 @@ This project addresses these challenges through a hybrid recommendation system t
 
 - **Flask API**: Provides endpoints for movie search, recommendations, and user interactions
 - **Hybrid Recommender**: Combines content-based and collaborative filtering techniques
+
+## Deployment
+
+### Deploying to Render
+
+This project is configured for easy deployment on Render's free tier:
+
+1. Fork or clone this repository to your GitHub account
+2. Sign up for a free account at [render.com](https://render.com/)
+3. Create a new Web Service and connect your GitHub repository
+4. Configure the service with these settings:
+   - **Name**: movie-recommender-api (or your preferred name)
+   - **Environment**: Python 3
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `bash render_startup.sh`
+   - **Plan**: Free
+
+5. Add the following environment variable:
+   - `TMDB_API_KEY`: Your TMDB API key (get one from [themoviedb.org](https://www.themoviedb.org/settings/api))
+
+The `render_startup.sh` script will automatically:
+- Download required datasets if they don't exist
+- Train the initial model if needed
+- Start the Flask application with gunicorn
+
+**Note**: Render's free tier has some limitations:
+- Services spin down after 15 minutes of inactivity
+- Limited to 750 hours of runtime per month
 - **User Interaction Tracker**: Records user behavior to improve recommendations
 - **Model Updater**: Periodically updates the recommendation model with new data
 

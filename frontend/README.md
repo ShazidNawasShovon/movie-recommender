@@ -46,7 +46,45 @@ frontend/
 
 ## Setup and Installation
 
-### Prerequisites
+### Deployment to Netlify
+
+The frontend is configured for easy deployment on Netlify's free tier:
+
+1. Fork or clone this repository to your GitHub account
+2. Sign up for a free account at [netlify.com](https://netlify.com/)
+3. From the Netlify dashboard, click "New site from Git"
+4. Connect your GitHub repository
+5. Configure the build settings:
+   - **Base directory**: `frontend` (since the React app is in a subdirectory)
+   - **Build command**: `npm run build`
+   - **Publish directory**: `dist` (for Vite projects)
+
+6. Add the following environment variable:
+   - `REACT_APP_API_URL`: Your Render backend URL (e.g., https://movie-recommender-api.onrender.com)
+
+7. Click "Deploy site"
+
+Netlify will deploy your frontend and provide you with a URL like `https://movie-recommender.netlify.app`
+
+### Connecting to Backend
+
+Before deploying, update the API URL in `src/services/api.js`:
+
+```javascript
+// Replace this line
+const API_URL = 'http://localhost:8502';
+
+// With this
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8502';
+```
+
+Then create a `.env.production` file in the frontend directory:
+
+```
+VITE_API_URL=https://your-render-backend-url.onrender.com
+```
+
+### Local Development Prerequisites
 
 - Node.js (v14 or later)
 - npm or yarn
