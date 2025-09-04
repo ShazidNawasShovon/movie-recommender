@@ -1,4 +1,12 @@
-bind = "0.0.0.0:8502"
+bind = "0.0.0.0:$PORT"
 workers = 1
-threads = 8
-timeout = 120
+threads = 4
+timeout = 180
+max_requests = 1000
+max_requests_jitter = 50
+worker_class = 'sync'
+worker_tmp_dir = '/tmp'
+worker_connections = 1000
+keepalive = 2
+# Memory optimization
+preload_app = False

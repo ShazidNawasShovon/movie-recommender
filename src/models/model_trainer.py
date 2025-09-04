@@ -110,8 +110,15 @@ class ModelTrainer:
         """
         print("Loading movie datasets...")
         try:
-            movies = pd.read_csv(movies_csv)
-            credits = pd.read_csv(credits_csv)
+            # Use low_memory=False to avoid mixed type inference issues
+            # Use dtype specification for optimization
+            dtype_dict = {
+                'id': 'int32',
+                'title': 'str',
+                'overview': 'str'
+            }
+            movies = pd.read_csv(movies_csv, low_memory=False, dtype=dtype_dict)
+            credits = pd.read_csv(credits_csv, low_memory=False, dtype=dtype_dict)
         except Exception as e:
             print(f"Error loading datasets: {e}")
             return None, None
@@ -153,23 +160,43 @@ class ModelTrainer:
         movies['tags'] = movies['overview'] + movies['genres'] + movies['keywords'] + movies['cast'] + movies['director']
         
         # Create a new DataFrame with selected columns
-        new_df = movies[['id', 'title', 'tags']]
+        # Use copy=True to avoid SettingWithCopyWarning
+        new_df = movies[['id', 'title', 'tags']].copy()
         
-        # Convert tags to string
-        new_df['tags'] = new_df['tags'].apply(lambda x: " ".join(x).lower())
+        # Convert tags to string - use .loc to avoid SettingWithCopyWarning
+        print("Converting tags to string...")
+        new_df.loc[:, 'tags'] = new_df['tags'].apply(lambda x: " ".join(x).lower())
         
-        # Apply stemming to tags
+        # Apply stemming to tags - use .loc to avoid SettingWithCopyWarning
         print("Applying stemming to tags...")
-        new_df['tags'] = new_df['tags'].apply(self.stem)
+        new_df.loc[:, 'tags'] = new_df['tags'].apply(self.stem)
         
-        # Create count vectors
+        # Free up memory
+        movies = None
+        credits = None
+        import gc
+        gc.collect()
+        
+        # Create count vectors with reduced memory usage
         print("Creating count vectors...")
-        cv = CountVectorizer(max_features=5000, stop_words='english')
-        vectors = cv.fit_transform(new_df['tags']).toarray()
+        cv = CountVectorizer(max_features=3000, stop_words='english')
+        vectors = cv.fit_transform(new_df['tags'])  # Keep as sparse matrix, don't convert to array
         
-        # Calculate cosine similarity
+        # Calculate cosine similarity in chunks to reduce memory usage
         print("Calculating cosine similarity...")
-        similarity = cosine_similarity(vectors)
+        # Use a smaller chunk size for lower memory usage
+        chunk_size = 1000
+        n_samples = vectors.shape[0]
+        similarity = np.zeros((n_samples, n_samples), dtype=np.float32)  # Use float32 instead of float64
+        
+        for i in range(0, n_samples, chunk_size):
+            end = min(i + chunk_size, n_samples)
+            chunk = vectors[i:end]
+            similarity[i:end] = cosine_similarity(chunk, vectors)
+            # Free memory after each chunk
+            if i % (chunk_size * 2) == 0:
+                print(f"Processed {i}/{n_samples} samples...")
+                gc.collect()
         
         # Rename id to movie_id for clarity
         new_df.rename(columns={'id': 'movie_id'}, inplace=True)
@@ -181,8 +208,12 @@ class ModelTrainer:
         
         # Save processed data
         print(f"Saving model to {self.movies_path} and {self.similarity_path}...")
-        pickle.dump(new_df, open(self.movies_path, 'wb'))
-        pickle.dump(similarity, open(self.similarity_path, 'wb'))
+        # Save in chunks to reduce memory usage
+        with open(self.movies_path, 'wb') as f:
+            pickle.dump(new_df, f, protocol=4)
+        
+        with open(self.similarity_path, 'wb') as f:
+            pickle.dump(similarity, f, protocol=4)
         
         print("Content-based model training completed.")
         return new_df, similarity

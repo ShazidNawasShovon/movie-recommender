@@ -65,13 +65,24 @@ This project is configured for easy deployment on Render's free tier:
    - **Start Command**: `bash render_startup.sh`
    - **Plan**: Free
 
-5. Add the following environment variable:
+5. Add the following environment variables:
    - `TMDB_API_KEY`: Your TMDB API key (get one from [themoviedb.org](https://www.themoviedb.org/settings/api))
+   - `ALLOWED_ORIGIN`: Your frontend URL (if deploying frontend separately)
 
 The `render_startup.sh` script will automatically:
 - Download required datasets if they don't exist
-- Train the initial model if needed
-- Start the Flask application with gunicorn
+- Train the initial model if needed with memory optimizations
+- Start the Flask application with gunicorn using optimized settings
+
+#### Memory Optimization for Render Deployment
+
+This project includes several optimizations to run successfully on Render's free tier (512MB memory limit):
+
+1. **Chunked Processing**: The model training process uses chunked processing for cosine similarity calculations
+2. **Memory Management**: Explicit garbage collection and memory cleanup during training
+3. **Data Type Optimization**: Using more memory-efficient data types (float32 instead of float64)
+4. **Sparse Matrices**: Keeping vectors in sparse format when possible
+5. **Gunicorn Configuration**: Optimized settings in gunicorn_config.py for better memory usage
 
 **Note**: Render's free tier has some limitations:
 - Services spin down after 15 minutes of inactivity
