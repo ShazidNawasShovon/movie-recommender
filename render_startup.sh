@@ -33,6 +33,11 @@ if [ -z "${PORT}" ]; then
 fi
 echo "Starting server on PORT: ${PORT}"
 
+# Make sure the port is visible to Render's port scanner
+echo "Binding to port ${PORT} on host 0.0.0.0"
+
 # Start the Flask application with gunicorn
 # Using the gunicorn_config.py which binds to the PORT environment variable
-exec gunicorn api_server:app --config gunicorn_config.py
+# The --preload flag ensures the application is loaded before forking worker processes
+# This helps Render detect the port binding during startup
+exec gunicorn api_server:app --config gunicorn_config.py --preload

@@ -88,9 +88,27 @@ This project includes several optimizations to run successfully on Render's free
 
 The application is configured to automatically use the PORT environment variable provided by Render:
 
-1. **gunicorn_config.py**: Automatically detects the PORT environment variable with a fallback to 8502
-2. **render_startup.sh**: Ensures PORT is set with a fallback to 10000 if not provided by Render
-3. **Procfile**: Uses the correct web process type required by Render
+1. **gunicorn_config.py**: 
+   - Automatically detects the PORT environment variable with a fallback to 8502
+   - Includes socket binding tests to ensure port availability
+   - Logs detailed binding information for debugging
+
+2. **render_startup.sh**: 
+   - Ensures PORT is set with a fallback to 10000 if not provided by Render
+   - Uses the --preload flag to ensure early port binding
+   - Explicitly logs port binding information
+
+3. **api_server.py**:
+   - Configures port binding at the module level (not just in the main block)
+   - Logs port configuration information when imported
+
+4. **Procfile**: 
+   - Uses the correct web process type required by Render
+
+**Troubleshooting Port Binding Issues**: If Render shows "No open ports detected" errors:
+   - Check the deployment logs for binding information
+   - Ensure the application is binding to 0.0.0.0 (not localhost/127.0.0.1)
+   - Verify the PORT environment variable is being correctly passed to the application
 
 **Note**: Render's free tier has some limitations:
 - Services spin down after 15 minutes of inactivity

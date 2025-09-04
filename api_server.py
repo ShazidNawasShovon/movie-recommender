@@ -367,6 +367,10 @@ def register_user():
         print(f"Error in register_user: {e}")
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
+# Print port binding information at module level to ensure it's visible when imported by Gunicorn
+port = int(os.getenv("PORT", 8502))
+print(f"Flask app configured to bind to port: {port}")
+
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8502))
+    # This block only runs when the script is executed directly (not through Gunicorn)
     app.run(host="0.0.0.0", port=port)
