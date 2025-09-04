@@ -12,7 +12,8 @@ from src.utils.user_interactions import UserInteractionTracker
 from src.models.hybrid_recommender import HybridRecommender
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}}) # Enable CORS for all routes
+# CORS(app, resources={r"/*": {"origins": "*"}}) # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": ["https://movie-recommender-engine.netlify.app", "http://localhost:5173"]}})
 
 # TMDB API Configuration
 # NOTE: This is a sample key for demo purposes only. For production use, you must obtain your own API key
