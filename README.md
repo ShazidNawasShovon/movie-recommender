@@ -116,8 +116,8 @@ The hybrid approach combines recommendations from both systems by:
 1. **Clone the repository**
 
 ```bash
-git clone <repository-url>
-cd Movie-Recommender
+git clone https://github.com/ShazidNawasShovon/movie-recommender.git
+cd movie-recommender
 ```
 
 2. **Set up the backend**

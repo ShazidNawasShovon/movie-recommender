@@ -1,6 +1,6 @@
-# MovieMind Frontend
+# Movie Recommender Frontend
 
-A modern React frontend for the MovieMind recommendation system, built with Vite, React, Tailwind CSS, and ShadcnUI components.
+A modern React frontend for the Movie Recommender system, built with Vite, React, Tailwind CSS, and ShadcnUI components.
 
 ## Features
 
@@ -55,8 +55,8 @@ frontend/
 
 1. Clone the repository
    ```bash
-   git clone <repository-url>
-   cd Movie-Recommender/frontend
+   git clone https://github.com/ShazidNawasShovon/movie-recommender.git
+   cd movie-recommender/frontend
    ```
 
 2. Install dependencies
