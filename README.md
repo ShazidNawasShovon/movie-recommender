@@ -84,6 +84,14 @@ This project includes several optimizations to run successfully on Render's free
 4. **Sparse Matrices**: Keeping vectors in sparse format when possible
 5. **Gunicorn Configuration**: Optimized settings in gunicorn_config.py for better memory usage
 
+#### Port Configuration for Render
+
+The application is configured to automatically use the PORT environment variable provided by Render:
+
+1. **gunicorn_config.py**: Automatically detects the PORT environment variable with a fallback to 8502
+2. **render_startup.sh**: Ensures PORT is set with a fallback to 10000 if not provided by Render
+3. **Procfile**: Uses the correct web process type required by Render
+
 **Note**: Render's free tier has some limitations:
 - Services spin down after 15 minutes of inactivity
 - Limited to 750 hours of runtime per month

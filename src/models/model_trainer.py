@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import os
 import pickle
 import pandas as pd
@@ -8,7 +9,7 @@ import nltk
 from nltk.stem.porter import PorterStemmer
 import requests
 import ast
-
+load_dotenv()
 class ModelTrainer:
     """
     A class to handle model training for the movie recommendation system.
@@ -29,7 +30,7 @@ class ModelTrainer:
         """
         self.movies_path = movies_path
         self.similarity_path = similarity_path
-        self.tmdb_api_key = tmdb_api_key or os.environ.get('TMDB_API_KEY')
+        self.tmdb_api_key = tmdb_api_key or os.getenv('TMDB_API_KEY')
         
         # Create artifacts directory if it doesn't exist
         os.makedirs(os.path.dirname(movies_path), exist_ok=True)

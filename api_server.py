@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from dotenv import load_dotenv
 import pickle
 import pandas as pd
 import uuid
@@ -11,10 +12,11 @@ import requests
 from src.utils.user_interactions import UserInteractionTracker
 from src.models.hybrid_recommender import HybridRecommender
 
+load_dotenv()
 app = Flask(__name__)
 # CORS(app, resources={r"/*": {"origins": ["https://movie-recommender-engine.netlify.app", "http://localhost:5173"]}})
 # Enable CORS for all routes in development, or specific origins in production
-if os.environ.get("FLASK_ENV") == "development":
+if os.getenv("FLASK_ENV") == "development":
     CORS(app, resources={r"/*": {"origins": "*"}})
 else:
     # In production, specify allowed origins
@@ -23,7 +25,7 @@ else:
         "http://localhost:5173"  # Local development frontend
     ]
     # Add custom origins from environment variable if provided
-    custom_origin = os.environ.get("ALLOWED_ORIGIN")
+    custom_origin = os.getenv("ALLOWED_ORIGIN")
     if custom_origin:
         allowed_origins.append(custom_origin)
     
@@ -33,11 +35,11 @@ else:
 # NOTE: This is a sample key for demo purposes only. For production use, you must obtain your own API key
 # from https://www.themoviedb.org/settings/api and agree to their terms of use.
 # TMDB_API_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"  # Replace with your own API key
-TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "3fd2be6f0c70a2a598f084ddfb75487c")
-TMDB_API_URL = os.environ.get("TMDB_API_URL", "https://api.themoviedb.org/3")
-TMDB_IMAGE_BASE_URL = os.environ.get("TMDB_IMAGE_BASE_URL", "https://image.tmdb.org/t/p/")
-TMDB_POSTER_SIZE = os.environ.get("TMDB_POSTER_SIZE", "w500")
-TMDB_BACKDROP_SIZE = os.environ.get("TMDB_BACKDROP_SIZE", "w1280")
+TMDB_API_KEY = os.getenv("TMDB_API_KEY", "3fd2be6f0c70a2a598f084ddfb75487c")
+TMDB_API_URL = os.getenv("TMDB_API_URL", "https://api.themoviedb.org/3")
+TMDB_IMAGE_BASE_URL = os.getenv("TMDB_IMAGE_BASE_URL", "https://image.tmdb.org/t/p/")
+TMDB_POSTER_SIZE = os.getenv("TMDB_POSTER_SIZE", "w500")
+TMDB_BACKDROP_SIZE = os.getenv("TMDB_BACKDROP_SIZE", "w1280")
 
 # Ensure user interaction directory exists
 os.makedirs("data/user_interactions", exist_ok=True)
@@ -366,5 +368,5 @@ def register_user():
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8502))
+    port = int(os.getenv("PORT", 8502))
     app.run(host="0.0.0.0", port=port)

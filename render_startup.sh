@@ -26,6 +26,13 @@ echo "Cleaning up memory..."
 sync
 echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 
+# Ensure PORT environment variable is set (Render should set this automatically)
+if [ -z "${PORT}" ]; then
+    echo "PORT environment variable not set, using default 10000"
+    export PORT=10000
+fi
+echo "Starting server on PORT: ${PORT}"
+
 # Start the Flask application with gunicorn
-# Make sure to bind to the PORT environment variable provided by Render
+# Using the gunicorn_config.py which binds to the PORT environment variable
 exec gunicorn api_server:app --config gunicorn_config.py
