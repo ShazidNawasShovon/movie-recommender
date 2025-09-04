@@ -1,9 +1,7 @@
 /**
  * API service for connecting with the movie recommendation backend
  */
-
-const API_URL = 'http://localhost:8502'; // Flask API port
-
+import { API_URL } from './GlobalFunctions'; // Flask API port
 // Get or create a user ID from localStorage
 const getUserId = () => {
   let userId = localStorage.getItem('movie_recommender_user_id');

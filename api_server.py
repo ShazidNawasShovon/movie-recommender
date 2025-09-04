@@ -12,16 +12,17 @@ from src.utils.user_interactions import UserInteractionTracker
 from src.models.hybrid_recommender import HybridRecommender
 
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}}) # Enable CORS for all routes
 
 # TMDB API Configuration
 # NOTE: This is a sample key for demo purposes only. For production use, you must obtain your own API key
 # from https://www.themoviedb.org/settings/api and agree to their terms of use.
-TMDB_API_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"  # Replace with your own API key
-TMDB_API_URL = "https://api.themoviedb.org/3"
-TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
-TMDB_POSTER_SIZE = "w500"
-TMDB_BACKDROP_SIZE = "w1280"
+# TMDB_API_KEY = "3fd2be6f0c70a2a598f084ddfb75487c"  # Replace with your own API key
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY", "3fd2be6f0c70a2a598f084ddfb75487c")
+TMDB_API_URL = os.environ.get("TMDB_API_URL", "https://api.themoviedb.org/3")
+TMDB_IMAGE_BASE_URL = os.environ.get("TMDB_IMAGE_BASE_URL", "https://image.tmdb.org/t/p/")
+TMDB_POSTER_SIZE = os.environ.get("TMDB_POSTER_SIZE", "w500")
+TMDB_BACKDROP_SIZE = os.environ.get("TMDB_BACKDROP_SIZE", "w1280")
 
 # Ensure user interaction directory exists
 os.makedirs("data/user_interactions", exist_ok=True)
@@ -349,5 +350,6 @@ def register_user():
         print(f"Error in register_user: {e}")
         return jsonify({"error": f"Internal server error: {str(e)}"}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8502)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8502))
+    app.run(host="0.0.0.0", port=port)
