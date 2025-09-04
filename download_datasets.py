@@ -13,8 +13,8 @@ def download_datasets():
     os.makedirs("data", exist_ok=True)
     
     # URLs for the datasets
-    movies_url = "https://raw.githubusercontent.com/ShazidNawasShovon/Movie-Recommender/main/data/tmdb_5000_movies.csv"
-    credits_url = "https://raw.githubusercontent.com/ShazidNawasShovon/Movie-Recommender/main/data/tmdb_5000_credits.csv"
+    movies_url = "https://raw.githubusercontent.com/ShazidNawasShovon/movie-recommender/main/data/tmdb_5000_movies.csv"
+    credits_url = "https://raw.githubusercontent.com/ShazidNawasShovon/movie-recommender/main/data/tmdb_5000_credits.csv"
     
     # Download movies dataset
     try:
