@@ -7,6 +7,16 @@ export FLASK_ENV="production"
 export PYTHONUNBUFFERED=1
 export PYTHONHASHSEED=random
 
+# Ensure PORT environment variable is set (Render should set this automatically)
+if [ -z "${PORT}" ]; then
+    echo "PORT environment variable not set, using default 5000"
+    export PORT=5000
+fi
+echo "Starting server on PORT: ${PORT}"
+
+# Make sure the port is visible to Render's port scanner
+echo "Binding to port ${PORT} on host 0.0.0.0"
+EXPOSE ${PORT}
 # Create necessary directories
 mkdir -p artifacts
 mkdir -p data/user_interactions
@@ -25,16 +35,6 @@ fi
 echo "Cleaning up memory..."
 sync
 echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
-
-# Ensure PORT environment variable is set (Render should set this automatically)
-if [ -z "${PORT}" ]; then
-    echo "PORT environment variable not set, using default 5000"
-    export PORT=5000
-fi
-echo "Starting server on PORT: ${PORT}"
-
-# Make sure the port is visible to Render's port scanner
-echo "Binding to port ${PORT} on host 0.0.0.0"
 
 # Start the Flask application with gunicorn
 # Using the gunicorn_config.py which binds to the PORT environment variable
