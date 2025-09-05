@@ -59,7 +59,7 @@ To connect this API service with the actual Flask API backend:
 // Example of updating the getAllMovies function to connect to a real backend
 export const getAllMovies = async () => {
   try {
-    const response = await fetch('http://localhost:8502/search?query=');
+    const response = await fetch('http://localhost:5000/search?query=');
     const data = await response.json();
     return data.movies;
   } catch (error) {

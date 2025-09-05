@@ -89,7 +89,7 @@ This project includes several optimizations to run successfully on Render's free
 The application is configured to automatically use the PORT environment variable provided by Render:
 
 1. **gunicorn_config.py**: 
-   - Automatically detects the PORT environment variable with a fallback to 8502
+   - Automatically detects the PORT environment variable with a fallback to 5000
    - Includes socket binding tests to ensure port availability
    - Logs detailed binding information for debugging
 

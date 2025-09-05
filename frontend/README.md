@@ -72,10 +72,10 @@ Before deploying, update the API URL in `src/services/api.js`:
 
 ```javascript
 // Replace this line
-const API_URL = 'http://localhost:8502';
+const API_URL = 'http://localhost:5000';
 
 // With this
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8502';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 ```
 
 Then create a `.env.production` file in the frontend directory:
@@ -113,8 +113,8 @@ VITE_API_URL=https://your-render-backend-url.onrender.com
 
 The frontend connects to the Flask API backend through the API service located in `src/services/api.js`. To connect to the Flask backend:
 
-1. Ensure the Flask backend is running on port 8502 (default configuration)
-2. The API endpoints in `src/services/api.js` are configured to connect to `http://localhost:8502`
+1. Ensure the Flask backend is running on port 5000 (default configuration)
+2. The API endpoints in `src/services/api.js` are configured to connect to `http://localhost:5000`
 3. CORS is already configured on the backend to allow requests from the frontend
 
 ### API Endpoints

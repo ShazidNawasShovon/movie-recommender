@@ -1,10 +1,10 @@
 import os
 from dotenv import load_dotenv
 load_dotenv()
-# Get PORT from environment variable with fallback to 8502
+# Get PORT from environment variable with fallback to 5000
 # Render sets the PORT environment variable for web services
 raw_port = os.getenv("PORT")
-port = int(raw_port) if raw_port is not None else 8502
+port = int(raw_port) if raw_port is not None else 5000
 print(f"PORT environment variable: {raw_port}")
 print(f"Using PORT: {port}")
 
@@ -35,7 +35,7 @@ try:
     test_socket.close()
 except Exception as e:
     print(f"Pre-startup socket test failed: {e}")
-workers = 1
+workers = 2
 threads = 4
 timeout = 180
 max_requests = 1000
