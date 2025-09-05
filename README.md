@@ -92,15 +92,29 @@ The application is configured to automatically use the PORT environment variable
    - Automatically detects the PORT environment variable with a fallback to 5000
    - Includes socket binding tests to ensure port availability
    - Logs detailed binding information for debugging
+   - Uses a 300-second timeout for long-running operations
+   - Enables preload_app for proper port detection
 
 2. **render_startup.sh**: 
-   - Ensures PORT is set with a fallback to 10000 if not provided by Render
+   - Ensures PORT is set with a fallback to 5000 if not provided by Render
    - Uses the --preload flag to ensure early port binding
    - Explicitly logs port binding information
+   - Includes a socket binding test to verify port availability
 
 3. **api_server.py**:
-   - Configures port binding at the module level (not just in the main block)
-   - Logs port configuration information when imported
+   - Port binding information is moved outside the __main__ block to ensure visibility when imported
+   - Includes a socket binding test at module level to verify port availability
+   - Logs environment and CORS configuration for debugging
+
+#### Troubleshooting Port Binding Issues
+
+If you encounter "No open ports detected" errors on Render:
+
+1. Verify that port binding occurs at the module level, not just in the __main__ block
+2. Ensure socket binding tests are performed early in the startup process
+3. Check that the PORT environment variable is properly set and used
+4. Use the --preload flag with Gunicorn to ensure early port binding
+5. Review Render logs for any binding errors or warnings
 
 4. **Procfile**: 
    - Uses the correct web process type required by Render

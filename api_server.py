@@ -7,6 +7,7 @@ import uuid
 import os
 import json
 import requests
+import socket
 
 # Import custom modules
 from src.utils.user_interactions import UserInteractionTracker
@@ -369,11 +370,21 @@ def register_user():
 
 
 
+# Print port binding information at module level to ensure it's visible when imported by Gunicorn
+port = int(os.getenv("PORT", 5000))
+print(f"Flask app configured to bind to port: {port}")
+print(f"Environment: {os.getenv('FLASK_ENV', 'development')}")
+print(f"Allowed origins: {allowed_origins if os.getenv('FLASK_ENV') != 'development' else '*'}")
+
+# Create a test socket to verify binding capability
+try:
+    test_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    test_socket.bind(("0.0.0.0", port))
+    print(f"Successfully bound test socket to 0.0.0.0:{port}")
+    test_socket.close()
+except Exception as e:
+    print(f"Warning: Could not bind test socket to port {port}: {e}")
+
 if __name__ == "__main__":
-    # Print port binding information at module level to ensure it's visible when imported by Gunicorn
-    port = int(os.getenv("PORT", 5000))
-    print(f"Flask app configured to bind to port: {port}")
-    print(f"Environment: {os.getenv('FLASK_ENV', 'development')}")
-    print(f"Allowed origins: {allowed_origins if os.getenv('FLASK_ENV') != 'development' else '*'}")
     # This block only runs when the script is executed directly (not through Gunicorn)
     app.run(host="0.0.0.0", port=port)
