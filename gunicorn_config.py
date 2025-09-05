@@ -37,12 +37,12 @@ except Exception as e:
     print(f"Pre-startup socket test failed: {e}")
 workers = 2
 threads = 4
-timeout = 180
+timeout = 300
 max_requests = 1000
 max_requests_jitter = 50
 worker_class = 'sync'
 worker_tmp_dir = '/tmp'
 worker_connections = 1000
 keepalive = 2
-# Memory optimization
-preload_app = False
+# Memory optimization - Enable preload for Render deployment
+preload_app = True

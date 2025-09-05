@@ -373,5 +373,7 @@ if __name__ == "__main__":
     # Print port binding information at module level to ensure it's visible when imported by Gunicorn
     port = int(os.getenv("PORT", 5000))
     print(f"Flask app configured to bind to port: {port}")
+    print(f"Environment: {os.getenv('FLASK_ENV', 'development')}")
+    print(f"Allowed origins: {allowed_origins if os.getenv('FLASK_ENV') != 'development' else '*'}")
     # This block only runs when the script is executed directly (not through Gunicorn)
-    app.run(host="0.0.0.0", port=port or 5000)
+    app.run(host="0.0.0.0", port=port)
