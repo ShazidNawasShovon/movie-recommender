@@ -28,8 +28,8 @@ ENV/
 # data/tmdb_5000_credits.csv
 # data/tmdb_5000_movies.csv
 data/user_interactions/
-artifacts/movie_list.pkl
-artifacts/similarity.pkl
+# artifacts/movie_list.pkl
+# artifacts/similarity.pkl
 
 # IDE
 .idea/
