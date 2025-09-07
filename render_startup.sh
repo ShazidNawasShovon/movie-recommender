@@ -17,12 +17,10 @@ echo "Starting server on PORT: ${PORT}"
 # Make sure the port is visible to Render's port scanner
 echo "Binding to port ${PORT} on host 0.0.0.0"
 # Add a socket test to verify port binding capability
-python -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.bind(('0.0.0.0', ${PORT})); print(f'Successfully bound to 0.0.0.0:{${PORT}}'); s.close()" || echo "Warning: Could not bind to port ${PORT} for testing"
+python -c "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.bind(('0.0.0.0', ${PORT})); print(f'Successfully bound to 0.0.0.0:{PORT}'); s.close()" || echo "Warning: Could not bind to port ${PORT} for testing"
 # Create necessary directories
 mkdir -p artifacts
 mkdir -p data/user_interactions
-
-
 
 # Clean up memory before starting the server
 echo "Cleaning up memory..."
