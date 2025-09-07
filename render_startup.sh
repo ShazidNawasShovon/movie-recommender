@@ -31,7 +31,7 @@ echo 3 > /proc/sys/vm/drop_caches 2>/dev/null || true
 # Using the gunicorn_config.py which binds to the PORT environment variable
 # The --preload flag ensures the application is loaded before forking worker processes
 # This helps Render detect the port binding during startup
-exec gunicorn -w 4 api_server:app --config gunicorn_config.py --preload
+exec gunicorn -w 4 api_server:app --config gunicorn_config.py --preload --bind 0.0.0.0:${PORT}
 
 # Check if model files exist
 if [ ! -f "artifacts/movie_list.pkl" ] || [ ! -f "artifacts/similarity.pkl" ]; then
