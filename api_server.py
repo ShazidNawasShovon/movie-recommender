@@ -80,14 +80,16 @@ def fetch_movie_details(movie_id):
         return None
 
 # Function to recommend movies using the hybrid recommender
-def recommend(movie, user_id=None):
+def recommend(movie_title=None, user_id=None):
+    app.logger.info(f"Received recommendation request for movie_title: {movie_title}, user_id: {user_id}")
     try:
         # Use the hybrid recommender to get recommendations
         recommendations = hybrid_recommender.get_recommendations(
-            movie_title=movie,
+            movie_title=movie_title,
             user_id=user_id,
             n=5
         )
+        app.logger.info(f"Recommendations from hybrid_recommender: {recommendations}")
         
         # If no recommendations were found, return empty list
         if not recommendations:
@@ -96,28 +98,45 @@ def recommend(movie, user_id=None):
         # Enhance recommendations with TMDB data
         enhanced_recommendations = []
         for rec in recommendations:
-            movie_id = rec['id']
-            movie_details = fetch_movie_details(movie_id)
+            # Validate movie ID exists in dataset
+            movie_exists = not movies[movies['movie_id'] == rec['id']].empty
+            if not movie_exists:
+                app.logger.warning(f"Invalid movie ID in recommendations: {rec['id']}")
+                continue
             
-            poster_path = None
-            backdrop_path = None
+            movie_id = int(rec['id'])
+            try:
+                movie_details = fetch_movie_details(movie_id)
+                poster_path = movie_details.get('poster_path') if movie_details else None
+                backdrop_path = movie_details.get('backdrop_path') if movie_details else None
+            except Exception as e:
+                app.logger.error(f"Metadata fetch error: {str(e)}")
+                poster_path = None
+                backdrop_path = None
             
-            if movie_details:
-                poster_path = movie_details.get('poster_path')
-                backdrop_path = movie_details.get('backdrop_path')
+            # Validate and fallback for missing metadata
+            title = str(rec.get('title', movies[movies['movie_id'] == movie_id].iloc[0]['title']))
             
             enhanced_rec = {
                 'id': movie_id,
-                'title': rec['title'],
-                'poster_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_POSTER_SIZE}{poster_path}" if poster_path else None,
-                'backdrop_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_BACKDROP_SIZE}{backdrop_path}" if backdrop_path else None
+                'title': title,
+                'poster_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_POSTER_SIZE}{poster_path}" if poster_path else '/static/default_poster.jpg',
+                'backdrop_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_BACKDROP_SIZE}{backdrop_path}" if backdrop_path else '/static/default_backdrop.jpg'
             }
             enhanced_recommendations.append(enhanced_rec)
         
-        return jsonify(enhanced_recommendations)
+        return enhanced_recommendations
     except Exception as e:
-        print(f"Error in recommend function: {e}")
-        return []
+            import traceback
+            app.logger.error('Recommendation error:\n%s', traceback.format_exc())
+            return []
+
+@app.route('/recommend')
+def recommend_route():
+    movie_title = request.args.get('movie_title')
+    user_id = request.args.get('user_id')
+    recommendations = recommend(movie_title=movie_title, user_id=user_id)
+    return jsonify(recommendations)
 
 @app.route('/')
 def home():
@@ -220,24 +239,32 @@ def get_recommendations():
         
         # Record view interaction if user_id is provided
         if user_id and movie_title:
-            # Find movie_id from title
+            # Validate movie exists before recording interaction
             movie_matches = movies[movies['title'] == movie_title]
-            if len(movie_matches) > 0:
-                movie_id = int(movie_matches.iloc[0]['movie_id'])
-                user_tracker.record_interaction(
-                    user_id=user_id,
-                    movie_id=movie_id,
-                    interaction_type="view"
-                )
+            if len(movie_matches) == 0:
+                return jsonify({"error": "Movie not found"}), 404
+                
+            movie_id = int(movie_matches.iloc[0]['movie_id'])
+            user_tracker.record_interaction(
+                user_id=user_id,
+                movie_id=movie_id,
+                interaction_type="view"
+            )
         
-        recommendations = recommend(movie_title, user_id)
+        try:
+            recommendations = recommend(movie_title, user_id)
+        except Exception as e:
+            print(f"Recommendation error: {str(e)}")
+            return jsonify({"error": "Recommendation failed", "details": str(e)}), 500
+            
         if not recommendations:
-            return jsonify({"error": "Movie not found or no recommendations available"}), 404
+            return jsonify({"error": "No recommendations available"}), 404
         
         return jsonify(recommendations)
     except Exception as e:
-        print(f"Error in get_recommendations: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        import traceback
+        app.logger.error('Endpoint error:\n%s', traceback.format_exc())
+        return jsonify({"error": "Internal server error", "trace": traceback.format_exc()}), 500
 
 @app.route('/user/interact', methods=['POST', 'OPTIONS'])
 def record_user_interaction():
@@ -313,20 +340,60 @@ def get_user_recommendations():
             n=limit
         )
         
-        if not recommendations:
-            # If no personalized recommendations, return some popular movies
-            popular_movies = movies.head(limit).to_dict('records')
+        enhanced_recommendations = []
+        
+        if recommendations:
+            for rec in recommendations:
+                movie_id = rec.get('id')
+                if not movie_id:
+                    continue
+                
+                # Fetch TMDB details
+                movie_details = fetch_movie_details(movie_id)
+                poster_path = movie_details.get('poster_path') if movie_details else None
+                backdrop_path = movie_details.get('backdrop_path') if movie_details else None
+                
+                enhanced_recommendations.append({
+                    'id': movie_id,
+                    'title': rec.get('title'),
+                    'poster_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_POSTER_SIZE}{poster_path}" if poster_path else None,
+                    'backdrop_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_BACKDROP_SIZE}{backdrop_path}" if backdrop_path else None,
+                    **rec
+                })
+                
+                # Record recommendation
+                user_tracker.record_interaction(
+                    user_id=user_id,
+                    movie_id=movie_id,
+                    interaction_type="recommend"
+                )
+        
+        if not enhanced_recommendations:
+            # Fallback to popular movies with image data
+            popular_movies = []
+            for _, row in movies.head(limit).iterrows():
+                movie_id = int(row['movie_id'])
+                movie_details = fetch_movie_details(movie_id)
+                poster_path = movie_details.get('poster_path') if movie_details else None
+                backdrop_path = movie_details.get('backdrop_path') if movie_details else None
+                
+                popular_movies.append({
+                    'id': movie_id,
+                    'title': str(row['title']),
+                    'poster_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_POSTER_SIZE}{poster_path}" if poster_path else None,
+                    'backdrop_url': f"{TMDB_IMAGE_BASE_URL}{TMDB_BACKDROP_SIZE}{backdrop_path}" if backdrop_path else None
+                })
+            
             return jsonify(popular_movies)
         
-        # Record these recommendations
-        for rec in recommendations:
-            user_tracker.record_interaction(
-                user_id=user_id,
-                movie_id=rec['id'],
-                interaction_type="recommend"
-            )
-        
-        return jsonify(recommendations)
+        return jsonify(enhanced_recommendations)
+    
+    except Exception as e:
+        print(f"Error in get_user_recommendations: {str(e)}")
+        return jsonify({
+            "error": "Failed to get recommendations",
+            "details": str(e)
+        }), 500
     except Exception as e:
         print(f"Error in get_user_recommendations: {e}")
         return jsonify({"error": "Internal server error"}), 500
